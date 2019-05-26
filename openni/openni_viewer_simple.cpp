@@ -1,3 +1,4 @@
+#include <memory>
 #include <pcl/io/openni_grabber.h>
 #include <pcl/visualization/cloud_viewer.h>
 
@@ -14,7 +15,7 @@ class SimpleOpenNIViewer
 
         void run()
         {
-            pcl::Grabber* interface = new pcl::OpenNIGrabber();
+            std::unique_ptr<pcl::Grabber> interface(new pcl::OpenNIGrabber());
             boost::function<void (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&)>
                 f = boost::bind(&SimpleOpenNIViewer::cloud_cb_, this, _1);
             interface->registerCallback(f);
