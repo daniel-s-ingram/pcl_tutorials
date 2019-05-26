@@ -1,16 +1,26 @@
 #include <memory>
 #include <pcl/io/openni_grabber.h>
+#include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
+#include "Eigen/Core"
 
 class SimpleOpenNIViewer
 {
     public:
-        SimpleOpenNIViewer() : viewer("PCL OpenNI Viewer") {}
+        SimpleOpenNIViewer() : viewer("PCL OpenNI Viewer")
+        {
+            T = Eigen::Affine3f::Identity();
+            T.rotate(Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitZ()));
+            transformedCloud = pcl::PointCloud<pcl::PointXYZRGBA>::Ptr(new pcl::PointCloud<pcl::PointXYZRGBA>());
+        }
 
         void cloud_cb_(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud)
         {
             if (!viewer.wasStopped())
-                viewer.showCloud(cloud);
+            {
+                pcl::transformPointCloud(*cloud, *transformedCloud, T);
+                viewer.showCloud(transformedCloud);
+            }
         }
 
         void run()
@@ -25,7 +35,9 @@ class SimpleOpenNIViewer
             interface->stop();
         }
 
+        pcl::PointCloud<pcl::PointXYZRGBA>::Ptr transformedCloud;
         pcl::visualization::CloudViewer viewer;
+        Eigen::Affine3f T;
 };
 
 int main()
